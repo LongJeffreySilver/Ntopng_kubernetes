@@ -155,8 +155,13 @@ class ntopng_server():#CharmBase
 
         try:
 
-            stop = subprocess.Popen(["service", "ntopng", "stop"])
+            '''stop = subprocess.Popen(["service", "ntopng", "stop"])
             stop.communicate()
+            '''
+            for process in psutil.process_iter():
+                if "ntopng" in process.name() and "zombie" not in process.status():
+                    process.kill()
+
             reset = subprocess.Popen(["redis-cli", "del", "ntopng.user.admin.password"],stdout=subprocess.PIPE)
             reset.communicate()
             start = subprocess.Popen(["service", "ntopng", "start"])
@@ -299,7 +304,11 @@ class ntopng_server():#CharmBase
     #### 8. Apagar el servicio con services
     def _on_stop_service_action(self): #event
         try:
-            subprocess.Popen(["service", "ntopng", "stop"])
+            #subprocess.Popen(["service", "ntopng", "stop"])
+            for process in psutil.process_iter():
+                if "ntopng" in process.name() and "zombie" not in process.status():
+                    process.kill()
+            
             print("Server stoped successfully")
             '''event.set_results({
                     "output": f"Server stoped successfully"
@@ -396,6 +405,7 @@ class charm:
 
     def main():
         ntopng = ntopng_server()
+        '''
         ntopng._on_start_service_action()
         ntopng._on_get_interfaces_action()
         ntopng._on_get_active_host_from_interface_action(2)
@@ -404,6 +414,7 @@ class charm:
         ntopng._on_get_alerts_action(2)
         ntopng._on_get_alerts_per_type_action(2)
         ntopng.on_get_alerts_per_serverity_action(2)
+        '''
         ntopng._on_health_check_action()
         ntopng._on_stop_service_action()
 
