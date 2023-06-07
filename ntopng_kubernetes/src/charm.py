@@ -55,7 +55,7 @@ class ntopng_server():#CharmBase
         try:
 
             ps_process = subprocess.Popen(["ps", "aux"],stdout=subprocess.PIPE)
-            grep_process = subprocess.run(["grep", "/usr/bin/ntopng"],stdin=ps_process.stdout, capture_output=True,text=True)
+            grep_process = subprocess.run(["grep", "ntopng -e"],stdin=ps_process.stdout, capture_output=True,text=True)
             aux = grep_process.stdout.splitlines()
             if len(aux) > 0:
                 line = aux[0].split()
@@ -64,7 +64,7 @@ class ntopng_server():#CharmBase
             if len(aux) == 0 or user_process != "ntopng":
                 reset = subprocess.Popen(["redis-cli", "del", "ntopng.user.admin.password"], stdout=subprocess.PIPE)
                 reset.communicate()
-                start = subprocess.Popen(["service", "ntopng", "start"])
+                start = subprocess.Popen(["ntopng", "-e"])
                 start.communicate()
                 time.sleep(6)
                 self.my_ntopng = Ntopng(self.username, self.password, self.auth_token, self.ntopng_url)
@@ -164,7 +164,7 @@ class ntopng_server():#CharmBase
 
             reset = subprocess.Popen(["redis-cli", "del", "ntopng.user.admin.password"],stdout=subprocess.PIPE)
             reset.communicate()
-            start = subprocess.Popen(["service", "ntopng", "start"])
+            start = subprocess.Popen(["ntopng","-e"])
             start.communicate()
             time.sleep(6) #Minimum 5 seconds to start the services
             
@@ -327,7 +327,7 @@ class ntopng_server():#CharmBase
                     pinfo = process.as_dict(attrs=['name'])
                     
                     ps_process = subprocess.Popen(["ps", "aux"],stdout=subprocess.PIPE)
-                    grep_process = subprocess.run(["grep", "/usr/bin/ntopng"],stdin=ps_process.stdout, capture_output=True,text=True)
+                    grep_process = subprocess.run(["grep", "ntopng -e"],stdin=ps_process.stdout, capture_output=True,text=True)
                     aux = grep_process.stdout.splitlines()[0]
                     cpu_percent = aux.split()
                     pinfo['cpu_percent'] = cpu_percent[2]
