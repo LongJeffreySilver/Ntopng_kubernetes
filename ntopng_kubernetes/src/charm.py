@@ -365,7 +365,7 @@ class ntopng_server():#CharmBase
         containers = [
             {
                 "name": self.framework.model.app.name,
-                "image": "jeffreysilver/wireguard_server:kubernetes", #FIXME cambiar imagen
+                "image": "jeffreysilver/ntopng_server:kubernetes",
                 "ports": [
                     {
                         "name": "ntopng-service",
