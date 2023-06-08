@@ -1,37 +1,153 @@
-init-config:
-    description: "Action to start and configure the server"
-get-server-data:
-    description: "Action to get the data of the server"
-add-client:
+start-service:
+    description: "Action to start the server"
+get-interfaces:
+    description: "Action to get all interfaces of the server"
+get-active-host-from-interface:
     description: "Action to add a client and generate its private IP address"
 
     params:
-        public-key:
-            description: "Public key of the client"
-            type: string
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
             default: ""
     required:
-      - public-key
+      - id-interface
 
-disconnect-client:
-    description:  "Action to remove the conection with a client"
+get-alerts-stats-from-interface:
+    description:  "Action to get the most viewed and most serious alerts"
     
     params:
-        public-key:
-            description: "Public key of the client"
-            type: string
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
             default: ""
-        
-        ip:
-            description: "Private IP of the client"
-            type: string
-            default: ""
-    required:
-      - public-key
-      - ip
 
-disconnect-server:
-    description:  "Action to disconnect the server conection"
+        epoch-begin:
+            description: "Start of the time interval (optional)"
+            type: int
+            default: ""
+
+        epoch-end:
+            description: "End of the time interval (optional)"
+            type: int
+            default: ""
+
+    required:
+      - id-interface
+      - epoch-begin
+      - epoch-end
+
+get-flow-alerts-stats:
+    description:  "Action to get flow alerts stats"
+
+    params:
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
+            default: ""
+
+        epoch-begin:
+            description: "Start of the time interval (optional)"
+            type: int
+            default: ""
+
+        epoch-end:
+            description: "End of the time interval (optional)"
+            type: int
+            default: ""
+    
+    required:
+      - id-interface
+      - epoch-begin
+      - epoch-end
+
+get-alerts:
+    description:  "Action to run queries on the alert database"
+
+    params:
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
+            default: ""
+
+        epoch-begin:
+            description: "Start of the time interval (optional)"
+            type: int
+            default: ""
+
+        epoch-end:
+            description: "End of the time interval (optional)"
+            type: int
+            default: ""
+
+        alert-family:
+            description: "The alert family (optional)"
+            type: String
+            default: "flow"
+
+        maxhits:
+            description: "Max number of results (optional)"
+            type: int
+            default: ""
+
+    required:
+      - id-interface
+      - epoch-begin
+      - epoch-end
+      - alert-family
+      - maxhits
+
+get-alerts-per-type:
+    description: "Get statistics about the number of alerts per alert type"
+
+    params:
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
+            default: ""
+
+        epoch-begin:
+            description: "Start of the time interval (optional)"
+            type: int
+            default: ""
+
+        epoch-end:
+            description: "End of the time interval (optional)"
+            type: int
+            default: ""
+    
+    required:
+      - id-interface
+      - epoch-begin
+      - epoch-end
+
+
+get-alerts-per-serverity:
+    description: "Get statistics about the number of alerts per alert severity"
+
+    params:
+        id-interface:
+            description: "ID of the interface for which information is to be obtained"
+            type: int
+            default: ""
+
+        epoch-begin:
+            description: "Start of the time interval (optional)"
+            type: int
+            default: ""
+
+        epoch-end:
+            description: "End of the time interval (optional)"
+            type: int
+            default: ""
+    
+    required:
+      - id-interface
+      - epoch-begin
+      - epoch-end
+
+stop-service:
+    description: "Shutting down the service"
 
 health-check:
-    description: "Check if Wireguard service is running"
+    description: "Check if the Ntopng service is running and the resources it is using."

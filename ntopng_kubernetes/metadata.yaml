@@ -1,13 +1,14 @@
-name: wireguard
-summary: Kubernetes operator for Wireguard VPN server 
+name: Ntopng
+summary: Kubernetes operator for Ntopng server 
 maintainers:
     - Alberto Garcia Perez <alberto.garciap@um.es>
 description: |
-    Wireguard is used to set up a Virtual Private Network (VPN) to connect
-    several clients. These clients can access  others services through a
-    secure tunnel, protecting network traffic.
+    Ntopng is a network traffic probe that provides 360 degrees Network visibility, 
+    with its ability to gather traffic information from traffic mirrors,
+    NetFlow exporters, SNMP devices, Firewall logs, Intrusion Detection systems.
 tags:
-    - VPN
+    - Network
+    - Traffic
     - Connection
 series:
     - kubernetes
@@ -16,8 +17,8 @@ deployment:
 resources:
     image:
         type: oci-image
-        description: Docker image for wireguard
-        upstream-source: "jeffreysilver/wireguard_server:kubernetes"
+        description: Docker image for Ntopng
+        upstream-source: "jeffreysilver/ntopng_server:kubernetes"
 #provides:
 #    prometheus-target:
 #        interface: http
