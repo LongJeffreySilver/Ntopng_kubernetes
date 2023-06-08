@@ -13,9 +13,9 @@ import psutil
 
 
 
-class ntopng_server():#CharmBase
+class ntopng_server(CharmBase):
 
-    def __init__(self) -> None: #, *args
+    def __init__(self, *args) -> None:
         # Defaults
         self.username     = "admin"
         self.password     = "admin"
@@ -35,7 +35,8 @@ class ntopng_server():#CharmBase
         except Exception as e:
             self._on_start_service_action()
 
-        """Initialize charm and configure states and events to observe.
+        '''Initialize charm and configure states and events to observe.'''
+        
         super().__init__(*args)
         self.framework.observe(self.on.start_service_action, self._on_start_service_action) #0
         self.framework.observe(self.on.get_interfaces_action,self._on_get_interfaces_action) #1
@@ -48,10 +49,10 @@ class ntopng_server():#CharmBase
         self.framework.observe(self.on.stop_service_action, self._on_stop_service_action) #8
         self.framework.observe(self.on.health_check_action, self._on_health_check_action) #9
         self.framework.observe(self.on.config_changed, self.configure_pod) #10
-        """
+        
 
     #### 0. Iniciar el servicio con services
-    def _on_start_service_action(self): #event
+    def _on_start_service_action(self, event):
         try:
 
             ps_process = subprocess.Popen(["ps", "aux"],stdout=subprocess.PIPE)
@@ -69,16 +70,14 @@ class ntopng_server():#CharmBase
                 time.sleep(6)
                 self.my_ntopng = Ntopng(self.username, self.password, self.auth_token, self.ntopng_url)
             
-            print("Server started successfully")
-            '''event.set_results({
+            event.set_results({
                     "output": f"Server started successfully"
-                })'''
+            })
         except Exception as e:
-            #event.fail(f"Server initiation failed due an unespected exception named: {e}")
-            print(f"Server initiation failed due an unespected exception named: {e}")
-    
+            event.fail(f"Server initiation failed due an unespected exception named: {e}")
+
     #### 1. Listar interfaces disponibles
-    def _on_get_interfaces_action(self): #event
+    def _on_get_interfaces_action(self, event):
         try:
             interfaces = self.my_ntopng.get_interfaces_list()
             interface_output = ""
@@ -86,18 +85,16 @@ class ntopng_server():#CharmBase
             for interface in interfaces:
                 interface_output = interface_output + "Interface: " + interface.get("name") + "\n\t" + "With ID: " + str(interface.get("ifid")) + "\n"
 
-            print(interface_output)
-            '''event.set_results({
+            event.set_results({
                     "output": interface_output
-                })'''
+            })
         except Exception as e:
-            #event.fail(f"Get interfaces failed due an unespected exception named: {e}")
-            print({e}) 
+            event.fail(f"Get interfaces failed due an unespected exception named: {e}")
     
     #### 2. Proporcionar la lista de hosts de una interfaz
-    def _on_get_active_host_from_interface_action(self, id_interface): #event
+    def _on_get_active_host_from_interface_action(self, event):
         try:
-            #interface = event.params["id-interface"]
+            id_interface = event.params["id-interface"]
             interface_instance = self.my_ntopng.get_interface(id_interface)
             host_list = interface_instance.get_active_hosts()
 
@@ -108,56 +105,49 @@ class ntopng_server():#CharmBase
                 host_bytes = host.get("bytes")
                 data_output = host.get("ip") + " - " + host_country + "\n"
                 data_output += "Connection: " + "received " + str(host_bytes.get("recvd")) + ", " + "sent " + str(host_bytes.get("sent")) + ", " + "total " + str(host_bytes.get("total")) 
-                print(data_output)
-                '''event.set_results({
+                event.set_results({
                     "output": data_output
-                })'''
+                })
 
         except Exception as e:
-            #event.fail(f"Get active host failed due an unespected exception named: {e}")  
-            print({e})
-
+            event.fail(f"Get active host failed due an unespected exception named: {e}")  
 
     #### 3. Most seen alerts & Alerts with higher severity
-    def _on_get_alerts_stats_from_interface_action(self, id_interface): #event 
+    def _on_get_alerts_stats_from_interface_action(self, event): 
 
         try:
-            #interface = event.params["id-interface"]
-            #epoch_begin = event.params["epoch-begin"]
-            #epoch_end = event.params["epoch-end"]
-            epoch_begin = ""
-            epoch_end = ""
+            id_interface = event.params["id-interface"]
+            epoch_begin = event.params["epoch-begin"]
+            epoch_end = event.params["epoch-end"]
 
-            if epoch_begin == '':
+            if epoch_begin is  None:
                 epoch_begin = self.epoch_begin
-            if epoch_end == '':
+            if epoch_end is  None:
                 epoch_end = self.epoch_end
 
             historial_interface = self.my_ntopng.get_historical_interface(id_interface)
             data = historial_interface.get_alerts_stats(epoch_begin, epoch_end)
             pretty = json.dumps(data, indent=4, sort_keys=True)
-            print(pretty)
 
-            '''event.set_results({
+            event.set_results({
                 "output": pretty
-            })'''
+            })
 
         except Exception as e:
-            #event.fail(f"Get alerts stats failed due an unespected exception named: {e}")
+            event.fail(f"Get alerts stats failed due an unespected exception named: {e}")
             parameters_info = "Parameters:\n \tid-interface (int): Number of the interface \n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n"
-            #event.fail(parameters_info)
-            print({e})
-            print("Check the parameters\n\n" + parameters_info)
+            event.fail(parameters_info)
+
 
 
     #### 4. Return flow alerts stats (premium function, but when reset the password we have 10 minutos of free premium license :D )
-    def _on_get_flow_alerts_stats_action(self, id_interface):
+    def _on_get_flow_alerts_stats_action(self, event):
 
         try:
+            id_interface = event.params["id-interface"]
+            epoch_begin = event.params["epoch-begin"]
+            epoch_end = event.params["epoch-end"]
 
-            '''stop = subprocess.Popen(["service", "ntopng", "stop"])
-            stop.communicate()
-            '''
             for process in psutil.process_iter():
                 if "ntopng" in process.name() and "zombie" not in process.status():
                     process.kill()
@@ -166,17 +156,11 @@ class ntopng_server():#CharmBase
             reset.communicate()
             start = subprocess.Popen(["ntopng","-e"])
             start.communicate()
-            time.sleep(6) #Minimum 5 seconds to start the services
+            time.sleep(6) #Minimum 6 seconds to start the services
             
-            #interface = event.params["id-interface"]
-            #epoch_begin = event.params["epoch-begin"]
-            #epoch_end = event.params["epoch-end"]
-            epoch_begin = ""
-            epoch_end = ""
-
-            if epoch_begin == '':
+            if epoch_begin is None:
                 epoch_begin = self.epoch_begin
-            if epoch_end == '':
+            if epoch_end is None:
                 epoch_end = self.epoch_end
 
             interface_instance = self.my_ntopng.get_interface(id_interface)
@@ -186,39 +170,32 @@ class ntopng_server():#CharmBase
             pretty = json.dumps(data, indent=4, sort_keys=True)
             print(pretty)
             
-            '''event.set_results({
+            event.set_results({
                 "output": pretty
-            })'''
+            })
 
         except Exception as e:
-            #event.fail(f"Get flow alerts stats failed due an unespected exception named: {e}")
+            event.fail(f"Get flow alerts stats failed due an unespected exception named: {e}")
             parameters_info = "Parameters:\n \tid-interface (int): Number of the interface\n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n"
-            #event.fail(parameters_info)
-            print({e})
-            print("Check the parameters\n\n" + parameters_info)
+            event.fail(parameters_info)
 
     #### 5. Run queries on the alert database
-    def _on_get_alerts_action(self,id_interface):
+    def _on_get_alerts_action(self,event):
 
         try:
-            #interface = event.params["id-interface"]
-            #alert_family = event.params["alert-family"]
-            #epoch_begin = event.params["epoch-begin"]
-            #epoch_end = event.params["epoch-end"]
-            #maxhits = event.params["maxhits"]
-            epoch_begin = ""
-            epoch_end = ""
-            maxhits = ""
-            alert_family = ""
+            id_interface = event.params["id-interface"]
+            alert_family = event.params["alert-family"] #flow, host, interface, mac, system and user
+            epoch_begin = event.params["epoch-begin"]
+            epoch_end = event.params["epoch-end"]
+            maxhits = event.params["maxhits"]
 
-            if epoch_begin == '':
+
+            if epoch_begin is None:
                 epoch_begin = self.epoch_begin
-            if epoch_end == '':
+            if epoch_end is None:
                 epoch_end = self.epoch_end
-            if maxhits == '':
+            if maxhits is None:
                 maxhits = self.maxhits
-            if alert_family == '':
-                alert_family  = "flow" #flow, host, interface, mac, system and user
                 
             select_clause = '*'
             where_clause  = ""
@@ -228,97 +205,85 @@ class ntopng_server():#CharmBase
             historial_interface = self.my_ntopng.get_historical_interface(id_interface)
             data = historial_interface.get_alerts(alert_family, epoch_begin, epoch_end, select_clause, where_clause, maxhits, group_by, order_by)
             pretty = json.dumps(data, indent=4, sort_keys=True)
-            print(pretty)
 
-            '''event.set_results({
+            event.set_results({
                 "output": pretty
-            })'''
+            })
 
-        except Exception as e: #FIXME Meter el alert_family en la variable parameters_info
-            parameters_info = "Parameters:\n \tid-interface (int): Number of the interface\n \tmaxhits(int): Max number of results (limit)\n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n \tmaxhits (int): Max number of results (limit)\n"
-            print({e})
-            print("Check the parameters\n\n" + parameters_info)
+        except Exception as e:
+            parameters_info = "Parameters:\n \tid-interface (int): Number of the interface\n \talert_family: The alert family(flow, host, interface, mac, system and user)\n \tmaxhits(int): Max number of results (limit)\n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n \tmaxhits (int): Max number of results (limit)\n"
+            event.fail(f"Get alerts failed due an unespected exception named: {e}")
+            event.fail(parameters_info)
 
     #### 6. Statistics about the number of alerts per alert type
-    def _on_get_alerts_per_type_action(self,id_interface): #event
+    def _on_get_alerts_per_type_action(self, event): #event
         try:
-            #interface = event.params["id-interface"]
-            #epoch_begin = event.params["epoch-begin"]
-            #epoch_end = event.params["epoch-end"]
-            epoch_begin = ""
-            epoch_end = ""
+            id_interface = event.params["id-interface"]
+            epoch_begin = event.params["epoch-begin"]
+            epoch_end = event.params["epoch-end"]
 
-            if epoch_begin == '':
+            if epoch_begin is None:
                 epoch_begin = self.epoch_begin
-            if epoch_end == '':
+            if epoch_end is None:
                 epoch_end = self.epoch_end
 
             interface_instance = self.my_ntopng.get_interface(id_interface)
             historial_interface = interface_instance.get_historical()
             data = historial_interface.get_alert_type_counters(epoch_begin, epoch_end)
             pretty = json.dumps(data, indent=4, sort_keys=True)
-            print(pretty)
 
-            '''event.set_results({
+            event.set_results({
                 "output": pretty
-            })'''
+            })
 
         except Exception as e:
-            #event.fail(f"Get alerts per type failed due an unespected exception named: {e}")
+            event.fail(f"Get alerts per type failed due an unespected exception named: {e}")
             parameters_info = "Parameters:\n \tid-interface (int): Number of the interface\n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n"
-            #event.fail(parameters_info)
-            print({e})
-            print("Check the parameters\n\n" + parameters_info)
+            event.fail(parameters_info)
+
 
     #### 7. Statistics about the number of alerts per alert severity
-    def on_get_alerts_per_serverity_action(self,id_interface):
+    def on_get_alerts_per_serverity_action(self,event):
         try:
-            #interface = event.params["id-interface"]
-            #epoch_begin = event.params["epoch-begin"]
-            #epoch_end = event.params["epoch-end"]
-            epoch_begin = ""
-            epoch_end = ""
+            id_interface = event.params["id-interface"]
+            epoch_begin = event.params["epoch-begin"]
+            epoch_end = event.params["epoch-end"]
 
-            if epoch_begin == '':
+
+            if epoch_begin is None:
                 epoch_begin = self.epoch_begin
-            if epoch_end == '':
+            if epoch_end is None:
                 epoch_end = self.epoch_end
 
             interface_instance = self.my_ntopng.get_interface(id_interface)
             historial_interface = interface_instance.get_historical()
             data = historial_interface.get_alert_severity_counters(epoch_begin, epoch_end)
             pretty = json.dumps(data, indent=4, sort_keys=True)
-            print(pretty)
 
-            '''event.set_results({
+            event.set_results({
                 "output": pretty
-            })'''
+            })
 
         except Exception as e:
-            #event.fail(f"Get alerts per severity failed due an unespected exception named: {e}")
+            event.fail(f"Get alerts per severity failed due an unespected exception named: {e}")
             parameters_info = "Parameters:\n \tid-interface (int): Number of the interface\n \tepoch_begin (int): Start of the time interval (epoch)\n \tepoch_end (int): End of the time interval (epoch)\n"
-            #event.fail(parameters_info)
-            print({e})
-            print("Check the parameters\n\n" + parameters_info)
+            event.fail(parameters_info)
 
-    #### 8. Apagar el servicio con services
-    def _on_stop_service_action(self): #event
+    #### 8. Shutting down the service
+    def _on_stop_service_action(self, event):
         try:
-            #subprocess.Popen(["service", "ntopng", "stop"])
             for process in psutil.process_iter():
                 if "ntopng" in process.name() and "zombie" not in process.status():
                     process.kill()
             
-            print("Server stoped successfully")
-            '''event.set_results({
+            event.set_results({
                     "output": f"Server stoped successfully"
-                })'''
+                })
         except Exception as e:
-            #event.fail(f"Server stop failed due an unespected exception named: {e}")
-            print({e})
+            event.fail(f"Server stop failed due an unespected exception named: {e}")
 
     #### 9. Health-check
-    def _on_health_check_action(self): #event
+    def _on_health_check_action(self, event):
         """Health-check service"""
         try:
             listOfProcObjects = []
@@ -337,27 +302,23 @@ class ntopng_server():#CharmBase
                     listOfProcObjects.append(pinfo)
                     io = psutil.net_io_counters()
                     net_usage = {"bytes_sent": self.get_size(io.bytes_sent), "bytes_recv": self.get_size(io.bytes_recv)}
-                    print(listOfProcObjects)
-                    print(str(net_usage))
-                    '''
+
                     event.set_results({
                         "output": f"Status: Ntopng is running",
                         "service-usage": listOfProcObjects,
                         "network-usage": str(net_usage)
                     })
-                    '''
+                    
                     return
-            '''
+            
             event.set_results({
                 "output": f"Health-check: Ntopng is not running"
             })
-            '''
         except Exception as e:
-            print(f"Health-check: Health-check status failed with the following exception: {e}")
-            #event.fail(f"Health-check: Health-check status failed with the following exception: {e}")
+            event.fail(f"Health-check: Health-check status failed with the following exception: {e}")
 
     #### 10. configure pod
-    def configure_pod(self): #event
+    def configure_pod(self):
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus()
             return
@@ -400,23 +361,5 @@ class ntopng_server():#CharmBase
                 return f"{bytes:.2f}{unit}B"
             bytes /= 1024
 
-
-class charm:
-
-    def main():
-        ntopng = ntopng_server()
-        '''
-        ntopng._on_start_service_action()
-        ntopng._on_get_interfaces_action()
-        ntopng._on_get_active_host_from_interface_action(2)
-        ntopng._on_get_alerts_stats_from_interface_action(2)
-        ntopng._on_get_flow_alerts_stats_action(2)
-        ntopng._on_get_alerts_action(2)
-        ntopng._on_get_alerts_per_type_action(2)
-        ntopng.on_get_alerts_per_serverity_action(2)
-        '''
-        ntopng._on_health_check_action()
-        ntopng._on_stop_service_action()
-
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main(ntopng_server)
