@@ -1,4 +1,4 @@
-name: Ntopng
+name: ntopng
 summary: Kubernetes operator for Ntopng server 
 maintainers:
     - Alberto Garcia Perez <alberto.garciap@um.es>
@@ -18,7 +18,7 @@ resources:
     image:
         type: oci-image
         description: Docker image for Ntopng
-        upstream-source: "jeffreysilver/ntopng_server:kubernetes"
+        upstream-source: "jeffreysilver/ntopng_server:api"
 #provides:
 #    prometheus-target:
 #        interface: http

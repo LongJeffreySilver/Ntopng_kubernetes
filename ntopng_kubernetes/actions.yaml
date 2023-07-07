@@ -1,153 +1,59 @@
-start-service:
-    description: "Action to start the server"
-get-interfaces:
-    description: "Action to get all interfaces of the server"
-get-active-host-from-interface:
-    description: "Action to add a client and generate its private IP address"
-
+launch-ntopng:
+    description: "Action to perform the API request to start ntopng."
     params:
         id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
+            description: "ID of the interface from which information is to be obtained."
+            type: integer
             default: ""
     required:
       - id-interface
 
-get-alerts-stats-from-interface:
-    description:  "Action to get the most viewed and most serious alerts"
-    
-    params:
-        id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
-            default: ""
+stop-ntopng:
+    description: "Action to perform the API request to stop ntopng."
 
-        epoch-begin:
-            description: "Start of the time interval (optional)"
-            type: int
-            default: ""
-
-        epoch-end:
-            description: "End of the time interval (optional)"
-            type: int
-            default: ""
-
-    required:
-      - id-interface
-      - epoch-begin
-      - epoch-end
-
-get-flow-alerts-stats:
-    description:  "Action to get flow alerts stats"
+rrd:
+    description: "Action to obtain the data to recreate plots from different Round Robin Database format files."
 
     params:
         id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
+            description: "ID of the interface from which information is to be obtained."
+            type: integer
             default: ""
-
-        epoch-begin:
-            description: "Start of the time interval (optional)"
-            type: int
+        type-file:
+            description: "The type of file that has the data of the network. Option list: alerted_flows, num_hosts, traffic_anomalies_v2 and dropped_alerts."
+            type: string
             default: ""
-
-        epoch-end:
-            description: "End of the time interval (optional)"
-            type: int
-            default: ""
-    
     required:
       - id-interface
-      - epoch-begin
-      - epoch-end
+      - type-file
 
 get-alerts:
-    description:  "Action to run queries on the alert database"
+    description: "Action to obtain the alerts from different types of alerts."
 
     params:
         id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
+            description: "ID of the interface from which information is to be obtained."
+            type: integer
             default: ""
-
-        epoch-begin:
-            description: "Start of the time interval (optional)"
-            type: int
+            
+        type-alert:
+            description: "The type of alert that occurs on the network. Option list: active_monitoring_alerts, flow_alerts, host_alerts, mac_alerts, snmp_alerts, network_alerts, interface_alerts and system_alerts."
+            type: string
             default: ""
-
-        epoch-end:
-            description: "End of the time interval (optional)"
-            type: int
-            default: ""
-
-        alert-family:
-            description: "The alert family (optional)"
-            type: String
-            default: "flow"
-
-        maxhits:
-            description: "Max number of results (optional)"
-            type: int
-            default: ""
-
     required:
       - id-interface
-      - epoch-begin
-      - epoch-end
-      - alert-family
-      - maxhits
+      - type-alert
 
-get-alerts-per-type:
-    description: "Get statistics about the number of alerts per alert type"
+get-top-talkers:
+
+    description: "Action to obtain the top talkers on a interface"
 
     params:
         id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
+            description: "ID of the interface from which information is to be obtained."
+            type: integer
             default: ""
-
-        epoch-begin:
-            description: "Start of the time interval (optional)"
-            type: int
-            default: ""
-
-        epoch-end:
-            description: "End of the time interval (optional)"
-            type: int
-            default: ""
-    
     required:
       - id-interface
-      - epoch-begin
-      - epoch-end
-
-
-get-alerts-per-serverity:
-    description: "Get statistics about the number of alerts per alert severity"
-
-    params:
-        id-interface:
-            description: "ID of the interface for which information is to be obtained"
-            type: int
-            default: ""
-
-        epoch-begin:
-            description: "Start of the time interval (optional)"
-            type: int
-            default: ""
-
-        epoch-end:
-            description: "End of the time interval (optional)"
-            type: int
-            default: ""
-    
-    required:
-      - id-interface
-      - epoch-begin
-      - epoch-end
-
-stop-service:
-    description: "Shutting down the service"
-
 health-check:
-    description: "Check if the Ntopng service is running and the resources it is using."
+    description: "Check the status of the internal services"
