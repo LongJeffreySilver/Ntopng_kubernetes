@@ -1,0 +1,14 @@
+#Command to launch: sudo docker-compose -f ntopng_server.yaml up &
+#sudo docker container ls
+#sudo docker exec -it IDCONTENEDOR bash
+version: '3.7'
+services:
+    ntopng_server:
+        restart: always
+        image: ntopng_server:latest
+        hostname: ntopng_server
+        stdin_open: true
+        network_mode: "host"
+        tty: true
+        privileged: true
+        #command: ["/bin/bash","-ce","tail -f /dev/null"]

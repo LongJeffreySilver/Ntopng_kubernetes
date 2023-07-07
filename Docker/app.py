@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 import subprocess
 import time
 import psutil
-from get_nic import getnic
 app = Flask(__name__)
 
 
