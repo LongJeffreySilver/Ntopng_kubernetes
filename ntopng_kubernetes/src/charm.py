@@ -66,7 +66,7 @@ class ntopng_server(CharmBase):
                 for i in range (0,22): #Take headers
                     file_data.append(aux_output[0 + i])
 
-                for i in range(0, 1000): #Get the last element since <params> or 2000 lines
+                for i in range(0, 1500): #Get the last element since <params> or 1500 lines
                     elem = aux_output.pop()
                     if "<rra>" in elem:
                         file_data.insert(22,elem)
