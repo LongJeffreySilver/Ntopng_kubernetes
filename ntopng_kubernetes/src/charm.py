@@ -30,7 +30,7 @@ class ntopng_server(CharmBase):
             
             headers =  {"Content-Type":"application/json"}
             data = '{"id_interface": "' + id_interface + '", "ntopng_data_path": "' + self.ntopng_data_path + '"}'
-            result = requests.post('http://localhost:5000/start-ntopng', headers=headers, data=data, verify=False)
+            result = requests.post('http://localhost:5001/start-ntopng', headers=headers, data=data, verify=False)
 
             event.set_results({
                 "output": str(result.json())
@@ -42,7 +42,7 @@ class ntopng_server(CharmBase):
 
     def _on_stop_ntopng_action(self, event):
         try:
-            result = requests.get('http://localhost:5000/stop-ntopng', verify=False)
+            result = requests.get('http://localhost:5001/stop-ntopng', verify=False)
             event.set_results({
                 "output": str(result.json())
             })
@@ -204,7 +204,7 @@ class ntopng_server(CharmBase):
 
                     {   
                         "name": "ntopng",
-                        "containerPort": 22,
+                        "containerPort": 26,
                         "protocol": "UDP",
                     }
                 ],
