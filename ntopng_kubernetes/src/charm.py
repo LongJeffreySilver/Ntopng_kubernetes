@@ -199,7 +199,7 @@ class ntopng_server(CharmBase):
         containers = [
             {
                 "name": self.framework.model.app.name,
-                "image": "jeffreysilver/ntopng_server:api",
+                "image": "jeffreysilver/ntopng_server:kubernetes",
                 "ports": [
 
                     {   
